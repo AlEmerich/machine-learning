@@ -59,7 +59,7 @@ def survival_stats(data, outcomes, key, filters = []):
     """
     
     # Check that the key exists
-    if key not in data.columns.values :
+    if key not in data.columns.values:
         print "'{}' is not a feature of the Titanic data. Did you spell something wrong?".format(key)
         return False
 
