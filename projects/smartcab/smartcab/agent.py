@@ -1,5 +1,6 @@
 import random
 import math
+import argparse
 from environment import Agent, Environment
 from planner import RoutePlanner
 from simulator import Simulator
@@ -110,6 +111,9 @@ class LearningAgent(Agent):
         # When learning, choose a random action with 'epsilon' probability
         # Otherwise, choose an action with the highest Q-value for the current state
         # Be sure that when choosing an action with highest Q-value that you randomly select between actions that "tie".
+        if not self.learning:
+            action = self.valid_actions[random.randint(0, len(
+                self.valid_actions))]
         return action
 
 
@@ -141,7 +145,7 @@ class LearningAgent(Agent):
         return
         
 
-def run():
+def run(args):
     """ Driving function for running the simulation. 
         Press ESC to close the simulation, or [SPACE] to pause the simulation. """
 
@@ -151,21 +155,22 @@ def run():
     #   verbose     - set to True to display additional output from the simulation
     #   num_dummies - discrete number of dummy agents in the environment, default is 100
     #   grid_size   - discrete number of intersections (columns, rows), default is (8, 6)
-    env = Environment()
-    
+    env = Environment(args.verbose, args.num_dummies, args.grid_size)
+
     ##############
     # Create the driving agent
     # Flags:
     #   learning   - set to True to force the driving agent to use Q-learning
     #    * epsilon - continuous value for the exploration factor, default is 1
     #    * alpha   - continuous value for the learning rate, default is 0.5
-    agent = env.create_agent(LearningAgent)
-    
+    agent = env.create_agent(LearningAgent, args.learning,
+                             args.epsilon, args.alpha)
+
     ##############
     # Follow the driving agent
     # Flags:
     #   enforce_deadline - set to True to enforce a deadline metric
-    env.set_primary_agent(agent)
+    env.set_primary_agent(agent, args.enforce_deadline)
 
     ##############
     # Create the simulation
@@ -174,15 +179,34 @@ def run():
     #   display      - set to False to disable the GUI if PyGame is enabled
     #   log_metrics  - set to True to log trial and simulation results to /logs
     #   optimized    - set to True to change the default log file name
-    sim = Simulator(env)
-    
+    sim = Simulator(env, args.update_delay, args.display,
+                    args.log_metrics, args.optimized)
+
     ##############
     # Run the simulator
     # Flags:
-    #   tolerance  - epsilon tolerance before beginning testing, default is 0.05 
+    #   tolerance  - epsilon tolerance before beginning testing, default is 0.05
     #   n_test     - discrete number of testing trials to perform, default is 0
-    sim.run()
+    sim.run(args.tolerance, args.n_test)
 
 
 if __name__ == '__main__':
-    run()
+    parser = argparse.ArgumentParser("Udacitt - SmartCab simulation agent")
+    parser.add_argument('--verbose', default=False, type=bool)
+    parser.add_argument('--num_dummies', default=100, type=int)
+    parser.add_argument('--grid_size', default=(8, 6), type=tuple)
+
+    parser.add_argument('--learning', default=False, type=bool)
+    parser.add_argument('--epsilon', default=1, type=int)
+    parser.add_argument('--alpha', default=0.5, type=float)
+
+    parser.add_argument('--enforce_deadline', default=False, type=bool)
+
+    parser.add_argument('--update_delay', default=2.0, type=float)
+    parser.add_argument('--display', default=True, type=bool)
+    parser.add_argument('--log_metrics', default=False, type=bool)
+    parser.add_argument('--optimized', default=False, type=bool)
+
+    parser.add_argument('--tolerance', default=0.05, type=bool)
+    parser.add_argument('--n_test', default=0, type=int)
+    run(parser.parse_args())
