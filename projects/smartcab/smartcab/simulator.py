@@ -36,6 +36,7 @@ class Simulator(object):
 
     def __init__(self, env, size=None, update_delay=2.0, display=True, log_metrics=False, optimized=False):
         self.env = env
+        print(display)
         self.size = size if size is not None else ((self.env.grid_size[0] + 1) * self.env.block_size, (self.env.grid_size[1] + 2) * self.env.block_size)
         self.width, self.height = self.size
         self.road_width = 44
@@ -115,7 +116,7 @@ class Simulator(object):
         'n_test' is the number of testing trials simulated
 
         Note that the minimum number of training trials is always 20. """
-
+        
         self.quit = False
 
         # Get the primary agent

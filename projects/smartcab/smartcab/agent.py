@@ -104,16 +104,13 @@ class LearningAgent(Agent):
         self.next_waypoint = self.planner.next_waypoint()
         action = None
 
-        ########### 
-        ## TO DO ##
-        ###########
         # When not learning, choose a random action
         # When learning, choose a random action with 'epsilon' probability
         # Otherwise, choose an action with the highest Q-value for the current state
         # Be sure that when choosing an action with highest Q-value that you randomly select between actions that "tie".
         if not self.learning:
             action = self.valid_actions[random.randint(0, len(
-                self.valid_actions))]
+                self.valid_actions)-1)]
         return action
 
 
@@ -149,13 +146,14 @@ def run(args):
     """ Driving function for running the simulation. 
         Press ESC to close the simulation, or [SPACE] to pause the simulation. """
 
+    raw_input(args)
     ##############
     # Create the environment
     # Flags:
     #   verbose     - set to True to display additional output from the simulation
     #   num_dummies - discrete number of dummy agents in the environment, default is 100
     #   grid_size   - discrete number of intersections (columns, rows), default is (8, 6)
-    env = Environment(args.verbose, args.num_dummies, args.grid_size)
+    env = Environment(bool(args.verbose), int(args.num_dummies), args.grid_size)
 
     ##############
     # Create the driving agent
@@ -163,15 +161,15 @@ def run(args):
     #   learning   - set to True to force the driving agent to use Q-learning
     #    * epsilon - continuous value for the exploration factor, default is 1
     #    * alpha   - continuous value for the learning rate, default is 0.5
-    agent = env.create_agent(LearningAgent, args.learning,
-                             args.epsilon, args.alpha)
+    agent = env.create_agent(LearningAgent, bool(args.learning),
+                             float(args.epsilon), float(args.alpha))
 
     ##############
     # Follow the driving agent
     # Flags:
     #   enforce_deadline - set to True to enforce a deadline metric
-    env.set_primary_agent(agent, args.enforce_deadline)
-
+    env.set_primary_agent(agent, bool(args.enforce_deadline))
+    print(type(args.n_test))
     ##############
     # Create the simulation
     # Flags:
@@ -179,34 +177,42 @@ def run(args):
     #   display      - set to False to disable the GUI if PyGame is enabled
     #   log_metrics  - set to True to log trial and simulation results to /logs
     #   optimized    - set to True to change the default log file name
-    sim = Simulator(env, args.update_delay, args.display,
-                    args.log_metrics, args.optimized)
+    print(type(args.display))
+    print(args.display)
+    sim = Simulator(env, update_delay=float(args.update_delay), display=args.display,
+                    log_metrics=bool(args.log_metrics), optimized=bool(args.optimized))
 
     ##############
     # Run the simulator
     # Flags:
     #   tolerance  - epsilon tolerance before beginning testing, default is 0.05
     #   n_test     - discrete number of testing trials to perform, default is 0
-    sim.run(args.tolerance, args.n_test)
+    sim.run(float(args.tolerance), int(args.n_test))
 
+def toBool(arg):
+    if arg in ("yes", "y", "True", "true", "t", "1"):
+        return True
+    elif arg in ("no", "n", "False", "false", "f", "0"):
+        return False
+    else:
+        raise argparse.ArgumentTypeError("Boolean Value expected")
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser("Udacitt - SmartCab simulation agent")
-    parser.add_argument('--verbose', default=False, type=bool)
-    parser.add_argument('--num_dummies', default=100, type=int)
-    parser.add_argument('--grid_size', default=(8, 6), type=tuple)
+    parser = argparse.ArgumentParser("Udacity - SmartCab simulation agent")
+    parser.add_argument('--verbose', default=False, type=toBool)
+    parser.add_argument('--num_dummies', default=100, type=float)
+    parser.add_argument('--grid_size', default=(8, 6))
 
-    parser.add_argument('--learning', default=False, type=bool)
-    parser.add_argument('--epsilon', default=1, type=int)
+    parser.add_argument('--learning', default=False, type=toBool)
+    parser.add_argument('--epsilon', default=1, type=float)
     parser.add_argument('--alpha', default=0.5, type=float)
 
-    parser.add_argument('--enforce_deadline', default=False, type=bool)
+    parser.add_argument('--enforce_deadline', default=False, type=toBool)
 
     parser.add_argument('--update_delay', default=2.0, type=float)
-    parser.add_argument('--display', default=True, type=bool)
-    parser.add_argument('--log_metrics', default=False, type=bool)
-    parser.add_argument('--optimized', default=False, type=bool)
-
-    parser.add_argument('--tolerance', default=0.05, type=bool)
+    parser.add_argument('--display', default=True, type=toBool)
+    parser.add_argument('--log_metrics', default=False, type=toBool)
+    parser.add_argument('--optimized', default=False, type=toBool)
+    parser.add_argument('--tolerance', default=0.05, type=float)
     parser.add_argument('--n_test', default=0, type=int)
     run(parser.parse_args())
