@@ -56,12 +56,12 @@ class LearningAgent(Agent):
         ########### 
         ## TO DO ##
         ###########
-        
+
         # NOTE : you are not allowed to engineer eatures outside of the inputs available.
         # Because the aim of this project is to teach Reinforcement Learning, we have placed 
         # constraints in order for you to learn how to adjust epsilon and alpha, and thus learn about the balance between exploration and exploitation.
         # With the hand-engineered features, this learning process gets entirely negated.
-        
+
         # Set 'state' as a tuple of relevant data for the agent        
         state = None
 
@@ -190,6 +190,7 @@ def run(args):
     sim.run(float(args.tolerance), int(args.n_test))
 
 def toBool(arg):
+    """Parse string argument to bool type."""
     if arg in ("yes", "y", "True", "true", "t", "1"):
         return True
     elif arg in ("no", "n", "False", "false", "f", "0"):
