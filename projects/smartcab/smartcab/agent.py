@@ -9,7 +9,7 @@ class LearningAgent(Agent):
     """ An agent that learns to drive in the Smartcab world.
         This is the object you will be modifying. """ 
 
-    def __init__(self, env, learning=False, epsilon=1.0, alpha=0.5):
+    def __init__(self, env, learning=False, epsilon=1.0, alpha=0.5, decay=0.5):
         super(LearningAgent, self).__init__(env)     # Set the agent in the evironment 
         self.planner = RoutePlanner(self.env, self)  # Create a route planner
         self.valid_actions = self.env.valid_actions  # The set of valid actions
@@ -19,8 +19,8 @@ class LearningAgent(Agent):
         self.Q = dict()          # Create a Q-table which will be a dictionary of tuples
         self.epsilon = epsilon   # Random exploration factor
         self.alpha = alpha       # Learning factor
-        self.decay = 0.05
         self.t = 0
+        self.decay = decay
 
     def reset(self, destination=None, testing=False):
         """ The reset function is called at the beginning of each trial.
@@ -39,10 +39,10 @@ class LearningAgent(Agent):
             self.alpha = 0
         else:
             # self.epsilon = 1 / (self.t * self.t)
-            # self.epsilon = math.pow(self.alpha, self.t)
-            # self.epsilon = math.exp(-self.alpha * self.t)
-            # self.epsilon = math.cos(self.alpha * self.t)
-            self.epsilon = self.epsilon - self.decay 
+            # self.epsilon = math.pow(self.decay, self.t)
+            self.epsilon = math.exp(-self.decay * self.t)
+            # self.epsilon = math.cos(self.decay * self.t)
+            # self.epsilon = self.epsilon - self.decay 
         return None
 
     def build_state(self):
@@ -162,7 +162,8 @@ def run(args):
     #    * epsilon - continuous value for the exploration factor, default is 1
     #    * alpha   - continuous value for the learning rate, default is 0.5
     agent = env.create_agent(LearningAgent, bool(args.learning),
-                             float(args.epsilon), float(args.alpha))
+                             float(args.epsilon), float(args.alpha),
+                             float(args.decay))
 
     ##############
     # Follow the driving agent
@@ -204,6 +205,7 @@ if __name__ == '__main__':
     parser.add_argument('--learning', default=False, type=toBool)
     parser.add_argument('--epsilon', default=1, type=float)
     parser.add_argument('--alpha', default=0.5, type=float)
+    parser.add_argument('--decay', default=0.5, type=float)
 
     parser.add_argument('--enforce_deadline', default=False, type=toBool)
 
