@@ -9,7 +9,7 @@ class LearningAgent(Agent):
     """ An agent that learns to drive in the Smartcab world.
         This is the object you will be modifying. """ 
 
-    def __init__(self, env, learning=False, epsilon=1.0, alpha=0.5):
+    def __init__(self, env, learning=False, epsilon=1.0, alpha=0.5, decay_fun=0):
         super(LearningAgent, self).__init__(env)     # Set the agent in the evironment 
         self.planner = RoutePlanner(self.env, self)  # Create a route planner
         self.valid_actions = self.env.valid_actions  # The set of valid actions
@@ -21,6 +21,9 @@ class LearningAgent(Agent):
         self.alpha = alpha       # Learning factor
         self.decay = 0.05
         self.t = 0
+        self.decay_fun = decay_fun
+        if decay_fun > 4:
+            self.decay_fun = 0
 
     def reset(self, destination=None, testing=False):
         """ The reset function is called at the beginning of each trial.
@@ -38,11 +41,16 @@ class LearningAgent(Agent):
             self.epsilon = 0
             self.alpha = 0
         else:
-            # self.epsilon = 1 / (self.t * self.t)
-            # self.epsilon = math.pow(self.alpha, self.t)
-            # self.epsilon = math.exp(-self.alpha * self.t)
-            # self.epsilon = math.cos(self.alpha * self.t)
-            self.epsilon = self.epsilon - self.decay 
+            if self.decay_fun == 0:
+                self.epsilon = self.epsilon - self.decay
+            elif self.decay_fun == 1:
+                self.epsilon = 1 / (self.t * self.t)
+            elif self.decay_fun == 2:
+                self.epsilon = math.pow(self.alpha, self.t)
+            elif self.decay_fun == 3:
+                self.epsilon = math.exp(-self.alpha * self.t)
+            elif self.decay_fun == 4:
+                self.epsilon = math.cos(self.alpha * self.t)
         return None
 
     def build_state(self):
@@ -61,7 +69,7 @@ class LearningAgent(Agent):
         # With the hand-engineered features, this learning process gets entirely negated.
 
         # Set 'state' as a tuple of relevant data for the agent
-        state = (inputs['light'], waypoint, inputs['oncoming'])
+        state = (inputs['light'], waypoint, inputs['left'], inputs['right'])
         return state
 
 
@@ -153,7 +161,8 @@ def run(args):
     #   verbose     - set to True to display additional output from the simulation
     #   num_dummies - discrete number of dummy agents in the environment, default is 100
     #   grid_size   - discrete number of intersections (columns, rows), default is (8, 6)
-    env = Environment(bool(args.verbose), int(args.num_dummies), args.grid_size)
+    env = Environment(bool(args.verbose), int(args.num_dummies),
+                      args.grid_size)
 
     ##############
     # Create the driving agent
@@ -162,7 +171,8 @@ def run(args):
     #    * epsilon - continuous value for the exploration factor, default is 1
     #    * alpha   - continuous value for the learning rate, default is 0.5
     agent = env.create_agent(LearningAgent, bool(args.learning),
-                             float(args.epsilon), float(args.alpha))
+                             float(args.epsilon), float(args.alpha),
+                             int(args.decay_fun))
 
     ##############
     # Follow the driving agent
@@ -204,6 +214,7 @@ if __name__ == '__main__':
     parser.add_argument('--learning', default=False, type=toBool)
     parser.add_argument('--epsilon', default=1, type=float)
     parser.add_argument('--alpha', default=0.5, type=float)
+    parser.add_argument('--decay_fun', default=0, type=int)
 
     parser.add_argument('--enforce_deadline', default=False, type=toBool)
 
